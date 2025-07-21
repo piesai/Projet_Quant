@@ -8,10 +8,10 @@ ticker = yf.Ticker(ticker_symbol)
 cours_action = ticker.history(period = '5y')
 cours_fermeture = cours_action["Close"]
 print(cours_fermeture.keys()[1200])
-#plt.plot([k for k in range(1256)],cours_fermeture)
+plt.plot([k for k in range(1256)],cours_fermeture)
 plt.xlabel("Jours sur les 5 dernières années depuis 19 Juillet 2025")
 plt.ylabel("cours de l'action")
-#plt.show()
+plt.show()
 
 #on visualise les options sur cette action 
 options = ticker.options
