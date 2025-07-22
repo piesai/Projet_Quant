@@ -9,18 +9,13 @@ ticker_symbol = 'AAPL'  # Example: Apple Inc.
 ticker = yf.Ticker(ticker_symbol)
 cours_action = ticker.history(period = '5y')
 cours_fermeture = cours_action["Close"]
-
-
 dates_expi= ticker.options
-print(dates_expi[10])
-option = ticker.option_chain(dates_expi[10]).calls
-print(option)
 
 #calcul des écarts entre théorie et pratique avec BSM 
-
-Ecarts = np.array([])
-M=[]
-dico = {}
+M1=[]
+M2 = []
+dico1 = {}
+dico2 = {}
 
 for ind_Tf in range(len(dates_expi)):
     tick = ticker.option_chain(dates_expi[ind_Tf]).calls
@@ -48,11 +43,13 @@ for ind_Tf in range(len(dates_expi)):
             if (jour1 in cours_fermeture.keys()) and (jour0 in cours_fermeture.keys()):
                 u = (cours_fermeture[jour1]/cours_fermeture[jour0] - 1)
                 vol += (u**2)
+                
         #update de la vol
-        vol = tick["impliedVolatility"][k]
         #strike price
         K = tick["strike"][k]
 
+
+        #volatilité estimée
         if (date_string in cours_fermeture.keys()):
             r = 0.0425 #taux approximatif de la FED. Améliorations possibles
             S = cours_fermeture[date_string]
@@ -63,21 +60,61 @@ for ind_Tf in range(len(dates_expi)):
             Nd_1 = norm.cdf(d_1)
             Nd_2 = norm.cdf(d_2)
             prix_call = S*Nd_1 - K*np.exp(-r*T)*Nd_2
-            e = abs((prix_call-tick["lastPrice"][k])/tick["lastPrice"][k])
+            e1 = abs((prix_call-tick["lastPrice"][k])/tick["lastPrice"][k])
                 
-            M.append(e)
-            if int(100*(S/K)) in dico.keys():
-                    dico[int(100*(S/K))].append(e)
+            M1.append(e1)
+            if int(100*(S/K)) in dico1.keys():
+                    dico1[int(100*(S/K))].append(e1)
 
             else: 
-                dico[int(100*(S/K))] = [e]
-            
-print(np.average(M))
-print(np.std(M))
-for m in dico.keys():
-    dico[m] = np.average(dico[m])
+                dico1[int(100*(S/K))] = [e1]
 
-L= dico.keys()
-G = dico.values()
+        #volatilité implicite
+        if (date_string in cours_fermeture.keys()):
+            vol = tick["impliedVolatility"][k]
+            r = 0.0425 #taux approximatif de la FED. Améliorations possibles
+            S = cours_fermeture[date_string]
+            #calcul de BSM : 
+            d_1 = (np.log(S/K) + (r+(vol**2)/2)*T)/(vol*np.sqrt(T))
+            d_2 = d_1 - vol*np.sqrt(T)
+            Nd_1 = norm.cdf(d_1)
+            Nd_2 = norm.cdf(d_2)
+            prix_call = S*Nd_1 - K*np.exp(-r*T)*Nd_2
+            e1 = abs((prix_call-tick["lastPrice"][k])/tick["lastPrice"][k])
+                
+            M2.append(e1)
+            if int(100*(S/K)) in dico2.keys():
+                    dico2[int(100*(S/K))].append(e1)
+
+            else: 
+                dico2[int(100*(S/K))] = [e1]
+            
+print("moyenne de l'erreur : ",np.average(M1))
+print("ecart type de l'erreur : ",np.std(M1))
+for m in dico1.keys():
+    dico1[m] = np.average(dico1[m])
+
+L= list(dico1.keys())
+L.sort()
+G = [dico1[k] for k in L]
 plt.plot(L,G)
+plt.plot([100,100],[-10,30],"r")
+plt.xlabel("rapport 100*(S/K)")
+plt.ylabel("erreure relative en pourcentage")
+plt.title("à gauche de la ligne rouge, out of the money. A droite, in the money. Volatilitée utilisée : volatilité estimée à partir du cours de l'action")
+plt.show()
+
+print("moyenne de l'erreur : ",np.average(M2))
+print("ecart type de l'erreur : ",np.std(M2))
+for m in dico2.keys():
+    dico2[m] = np.average(dico2[m])
+
+L= list(dico2.keys())
+L.sort()
+G = [dico2[k] for k in L]
+plt.plot(L,G)
+plt.plot([100,100],[-10,30],"r")
+plt.xlabel("rapport 100*(S/K)")
+plt.ylabel("erreure relative en pourcentage")
+plt.title("à gauche de la ligne rouge, out of the money. A droite, in the money. Volatilité utilisée : volatilité implicite")
 plt.show()
