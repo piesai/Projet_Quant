@@ -20,10 +20,10 @@ def binomial(T,N,K,S,vol):
     f = [[0 for j in range(i+1)] for i in range(0,N+1)]
     for j in range(0,N+1):
         f[N][j] = max(S*(u**j)*(d**(N-j)) - K,0)
-    for i in range(0,N+1):
+    for i in range(0,N):
         i = N - i -1
             
-        for j in range(0,i+1):
+        for j in range(0,i):
     
             f[i][j] = max(S*(u**j)*(d**(i-j)) - K, float(np.exp(-r*(T/N)))*(p*f[i+1][j+1] + (1-p)*f[i+1][j]))
     
@@ -46,7 +46,7 @@ for ind_Tf in range(len(dates_expi)):
         delta = date_exe - date_exacte
         T = (delta.days)*(5/7)*(1/252) #calcul un peu grossier où on prend 5/7 pour prendre en compte les week ends
         date_string = date_exacte.strftime('%Y-%m-%d' +  ' 00:00:00-04:00')
-        T+=0.01
+        T+=0.03
         
         #estimateur sans biais de la volatilité
         m = 200

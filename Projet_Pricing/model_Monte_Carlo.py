@@ -22,10 +22,10 @@ def binomial(T,N,K,S,vol):
     f = [[0 for j in range(i+1)] for i in range(0,N+1)]
     for j in range(0,N+1):
         f[N][j] = max(S*(u**j)*(d**(N-j)) - K,0)
-    for i in range(0,N+1):
+    for i in range(0,N):
         i = N - i -1
             
-        for j in range(0,i+1):
+        for j in range(0,i):
     
             f[i][j] = max(S*(u**j)*(d**(i-j)) - K, float(np.exp(-r*(T/N)))*(p*f[i+1][j+1] + (1-p)*f[i+1][j]))
     
@@ -35,4 +35,4 @@ def binomial(T,N,K,S,vol):
     return f[0][0]
 
 
-print(binomial(0.02984,100,160,213.7,0.054))
+print(binomial(0.0271,10,212.52,214.5,1.03e-05))
