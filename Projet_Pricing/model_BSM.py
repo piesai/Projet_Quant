@@ -26,9 +26,10 @@ for ind_Tf in range(len(dates_expi)):
         delta = date_exe - date_exacte
         T = (delta.days)*(5/7)*(1/252) #calcul un peu grossier où on prend 5/7 pour prendre en compte les week ends
         date_string = date_exacte.strftime('%Y-%m-%d' +  ' 00:00:00-04:00')
+        T += 0.01 # pour que ça marche le vendredi :')
 
         
-        #calcul de la volatilité avec EWMA
+        #estimateur sans biais de la volatilité
         m = 200
         Lambda = 0.94
         vol = 0
@@ -55,13 +56,14 @@ for ind_Tf in range(len(dates_expi)):
             S = cours_fermeture[date_string]
 
             #calcul de BSM : 
+            
             d_1 = (np.log(S/K) + (r+(vol**2)/2)*T)/(vol*np.sqrt(T))
             d_2 = d_1 - vol*np.sqrt(T)
             Nd_1 = norm.cdf(d_1)
             Nd_2 = norm.cdf(d_2)
             prix_call = S*Nd_1 - K*np.exp(-r*T)*Nd_2
             e1 = abs((prix_call-tick["lastPrice"][k])/tick["lastPrice"][k])
-                
+            
             M1.append(e1)
             if int(100*(S/K)) in dico1.keys():
                     dico1[int(100*(S/K))].append(e1)
@@ -81,7 +83,6 @@ for ind_Tf in range(len(dates_expi)):
             Nd_2 = norm.cdf(d_2)
             prix_call = S*Nd_1 - K*np.exp(-r*T)*Nd_2
             e1 = abs((prix_call-tick["lastPrice"][k])/tick["lastPrice"][k])
-                
             M2.append(e1)
             if int(100*(S/K)) in dico2.keys():
                     dico2[int(100*(S/K))].append(e1)
