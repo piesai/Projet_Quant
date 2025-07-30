@@ -10,7 +10,7 @@ ticker = yf.Ticker(ticker_symbol)
 cours_action = ticker.history(period = '5y')
 cours_fermeture = cours_action["Close"]
 dates_expi= ticker.options
-
+options = ticker.options
 #calcul des écarts entre théorie et pratique avec BSM 
 M1=[]
 M2 = []
@@ -65,11 +65,11 @@ for ind_Tf in range(len(dates_expi)):
             e1 = abs((prix_call-tick["lastPrice"][k])/tick["lastPrice"][k])
             
             M1.append(e1)
-            if int(100*(S/K)) in dico1.keys():
-                    dico1[int(100*(S/K))].append(e1)
+            if int(100*(K/S)) in dico1.keys():
+                    dico1[int(100*(K/S))].append(e1)
 
             else: 
-                dico1[int(100*(S/K))] = [e1]
+                dico1[int(100*(K/S))] = [e1]
 
         #volatilité implicite
         if (date_string in cours_fermeture.keys()):
@@ -84,11 +84,11 @@ for ind_Tf in range(len(dates_expi)):
             prix_call = S*Nd_1 - K*np.exp(-r*T)*Nd_2
             e1 = abs((prix_call-tick["lastPrice"][k])/tick["lastPrice"][k])
             M2.append(e1)
-            if int(100*(S/K)) in dico2.keys():
-                    dico2[int(100*(S/K))].append(e1)
+            if int(100*(K/S)) in dico2.keys():
+                    dico2[int(100*(K/S))].append(e1)
 
             else: 
-                dico2[int(100*(S/K))] = [e1]
+                dico2[int(100*(K/S))] = [e1]
             
 print("moyenne de l'erreur : ",np.average(M1))
 print("ecart type de l'erreur : ",np.std(M1))
@@ -99,8 +99,8 @@ L= list(dico1.keys())
 L.sort()
 G = [dico1[k] for k in L]
 plt.plot(L,G)
-plt.plot([100,100],[-10,30],"r")
-plt.xlabel("rapport 100*(S/K)")
+plt.plot([100,100],[-1,1],"r")
+plt.xlabel("rapport 100*(K/S)")
 plt.ylabel("erreure relative en pourcentage")
 plt.title("à gauche de la ligne rouge, out of the money. A droite, in the money. Volatilitée utilisée : volatilité estimée à partir du cours de l'action")
 plt.show()
@@ -114,8 +114,8 @@ L= list(dico2.keys())
 L.sort()
 G = [dico2[k] for k in L]
 plt.plot(L,G)
-plt.plot([100,100],[-10,30],"r")
-plt.xlabel("rapport 100*(S/K)")
+plt.plot([100,100],[-1,1],"r")
+plt.xlabel("rapport 100*(K/S)")
 plt.ylabel("erreure relative en pourcentage")
 plt.title("à gauche de la ligne rouge, out of the money. A droite, in the money. Volatilité utilisée : volatilité implicite")
 plt.show()

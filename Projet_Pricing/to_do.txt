@@ -1,0 +1,15 @@
+#######################################################
+
+                #A FAIRE : 
+#Project_Pricing
+    #SMILE VOLATILITY 3D
+
+
+#advanced_methods : 
+    #lire John Hull sur advanced_methods
+    #implémenter des méthodes sur la volatilité stochastique
+    #ABSOLUMENT ESSAYER LSM AVEC MONTE CARLO SINON T'AURA PAS FAIT MONTE CARLO
+
+
+
+#########################################################""

@@ -4,14 +4,23 @@ import matplotlib.pyplot as plt
 import numpy as np
 from datetime import datetime,timedelta
 from scipy.stats import norm
+import pytz
 #extraction des données
 ticker_symbol = 'AAPL'  # Example: Apple Inc.
 ticker = yf.Ticker(ticker_symbol)
 cours_action = ticker.history(period = '5y')
 cours_fermeture = cours_action["Close"]
 dates_expi= ticker.options
+dividends = ticker.dividends
+current_year = datetime.now().year
+new_york_tz = pytz.timezone('America/New_York')
+may_12th = datetime(year=current_year, month=5, day=12,tzinfo = new_york_tz) #date_premier_dividende de la période intéressante POUR L'ACTION APPLE
+for l in range(20):
+            dividends[may_12th + timedelta(days = l*90)] = 0.26
+print(dividends.keys())
+print(dividends.values)
 r = 0.0425
-N = 100
+N = 10
 
 def binomial(T,N,K,S,vol):
     u = float(np.exp(vol*np.sqrt(T/N)))
@@ -31,6 +40,37 @@ def binomial(T,N,K,S,vol):
     f[0][0]  =  max(S - K, float(np.exp(-r*(T/N)))*(p*f[1][1] + (1-p)*f[1][0]))
     return f[0][0]
 
+def binomial_div(T, N, K, S, sigma, D, r):
+    dt = T / N
+    u = np.exp(sigma * np.sqrt(dt))
+    d = 1 / u
+    p = (np.exp(r * dt) - d) / (u - d)
+
+    stock_tree = np.zeros((N + 1, N + 1))
+    stock_tree[0, 0] = S
+
+    for i in range(1, N + 1):
+        for j in range(i + 1):
+            stock_tree[j, i] = stock_tree[0, 0] * (u ** j) * (d ** (i - j))
+
+    for (dividend, time) in D:
+        step = int(time / T * N)
+        if step <= N:
+            stock_tree[:step + 1, step] -= dividend
+
+    option_tree = np.zeros((N + 1, N + 1))
+
+    for j in range(N + 1):
+        option_tree[j, N] = max(-K + stock_tree[j, N], 0)
+
+    for i in range(N - 1, -1, -1):
+        for j in range(i + 1):
+            exercise_value = -K + stock_tree[j, i]
+            continuation_value = np.exp(-r * dt) * (p * option_tree[j, i + 1] + (1 - p) * option_tree[j + 1, i + 1])
+            option_tree[j, i] = max(exercise_value, continuation_value)
+
+    return option_tree[0, 0]
+
 
 M1=[]
 M2 = []
@@ -48,6 +88,17 @@ for ind_Tf in range(len(dates_expi)):
         date_string = date_exacte.strftime('%Y-%m-%d' +  ' 00:00:00-04:00')
         T+=0.03
         
+        
+        #date des dividendes
+        D = []
+        for date_div in dividends.keys():
+             if (date_div > date_exacte) and (date_div < date_exe ):
+                 
+                  delta_div = date_div - date_exacte
+                  T_div = (delta_div.days)*(5/7)*(1/252)
+                  D.append((dividends[date_div],T_div))
+
+
         #estimateur sans biais de la volatilité
         m = 200
         Lambda = 0.94
@@ -75,29 +126,30 @@ for ind_Tf in range(len(dates_expi)):
             S = cours_fermeture[date_string]
 
             
-            prix_call = binomial(T,N,K,S,vol)
+            prix_call = binomial_div(T,N,K,S,vol,D,r)
             e1 = abs((prix_call-tick["lastPrice"][k])/tick["lastPrice"][k])
             
             M1.append(e1)
-            if int(100*(S/K)) in dico1.keys():
-                    dico1[int(100*(S/K))].append(e1)
+            if int(100*(K/S)) in dico1.keys():
+                    dico1[int(100*(K/S))].append(e1)
 
             else: 
-                dico1[int(100*(S/K))] = [e1]
+                dico1[int(100*(K/S))] = [e1]
 
         #volatilité implicite
         if (date_string in cours_fermeture.keys()):
             vol = tick["impliedVolatility"][k]
             S = cours_fermeture[date_string]
 
-            prix_call =  binomial(T,N,K,S,vol)
+            prix_call =  binomial_div(T,N,K,S,vol,D,r)
+
             e1 = abs((prix_call-tick["lastPrice"][k])/tick["lastPrice"][k])
             M2.append(e1)
-            if int(100*(S/K)) in dico2.keys():
-                    dico2[int(100*(S/K))].append(e1)
+            if int(100*(K/S)) in dico2.keys():
+                    dico2[int(100*(K/S))].append(e1)
 
             else: 
-                dico2[int(100*(S/K))] = [e1]
+                dico2[int(100*(K/S))] = [e1]
             
 print("moyenne de l'erreur : ",np.average(M1))
 print("ecart type de l'erreur : ",np.std(M1))
@@ -109,7 +161,7 @@ L.sort()
 G = [dico1[k] for k in L]
 plt.plot(L,G)
 plt.plot([100,100],[-10,30],"r")
-plt.xlabel("rapport 100*(S/K)")
+plt.xlabel("rapport 100*(K/S)")
 plt.ylabel("erreure relative en pourcentage")
 plt.title("à gauche de la ligne rouge, out of the money. A droite, in the money. Volatilitée utilisée : volatilité estimée à partir du cours de l'action")
 plt.show()
@@ -124,7 +176,7 @@ L.sort()
 G = [dico2[k] for k in L]
 plt.plot(L,G)
 plt.plot([100,100],[-10,30],"r")
-plt.xlabel("rapport 100*(S/K)")
+plt.xlabel("rapport 100*(K/S)")
 plt.ylabel("erreure relative en pourcentage")
 plt.title("à gauche de la ligne rouge, out of the money. A droite, in the money. Volatilité utilisée : volatilité implicite")
 plt.show()
