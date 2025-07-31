@@ -4,6 +4,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 from datetime import datetime,timedelta
 from scipy.stats import norm
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.interpolate import Rbf
+from mpl_toolkits.mplot3d import Axes3D
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 #extraction des données
 ticker_symbol = 'AAPL'  # Example: Apple Inc.
 ticker = yf.Ticker(ticker_symbol)
@@ -52,43 +58,61 @@ for ind_Tf in range(len(dates_expi)):
         #volatilité estimée
         if (date_string in cours_fermeture.keys()):
             S = cours_fermeture[date_string]
-            if int(100*(K/S)) in Vol_estim.keys():
-                    Vol_estim[int(100*(K/S))].append(vol)
+            if (int(100*(K/S)),T) in Vol_estim.keys():
+                    Vol_estim[(int(100*(K/S)),T)].append(vol)
 
             else: 
-                Vol_estim[int(100*(K/S))] = [vol]
+                Vol_estim[(int(100*(K/S)),T)] = [vol]
 
         #volatilité implicite
         if (date_string in cours_fermeture.keys()):
             vol = tick["impliedVolatility"][k]
             S = cours_fermeture[date_string]
-            if int(100*(K/S)) in Vol_imp.keys():
-                    Vol_imp[int(100*(K/S))].append(vol)
+            if (int(100*(K/S)),T) in Vol_imp.keys():
+                    Vol_imp[(int(100*(K/S)),T)].append(vol)
 
             else: 
-                Vol_imp[int(100*(K/S))] = [vol]
+                Vol_imp[(int(100*(K/S)),T)] = [vol]
             
 
 for m in Vol_estim.keys():
     Vol_estim[m] = np.average(Vol_estim[m])
-
-L= list(Vol_estim.keys())
-L.sort()
-G = [Vol_estim[k] for k in L]
-plt.plot(L,G)
-plt.xlabel("(K/S)")
-plt.ylabel("volatilité estimée avec estimateur sans biais")
+D = Vol_estim
+keys = np.array(list(D.keys()))
+values = np.array(list(D.values()))
+x_coords = keys[:, 0]
+y_coords = keys[:, 1]
+z_coords = values
+rbf = Rbf(x_coords, y_coords, z_coords, function='linear')
+x_grid, y_grid = np.meshgrid(np.linspace(min(x_coords), max(x_coords), 100),
+                             np.linspace(min(y_coords), max(y_coords), 100))
+z_grid = rbf(x_grid, y_grid)
+fig = plt.figure()
+ax = fig.add_subplot(111, projection='3d')
+ax.plot_surface(x_grid, y_grid, z_grid, cmap='viridis')
+ax.scatter(x_coords, y_coords, z_coords, c='r', marker='o')
+ax.set_xlabel('K/S')
+ax.set_ylabel('T')
+ax.set_zlabel('Vol')
 plt.show()
 
 
-for m in Vol_imp.keys():
-     Vol_imp[m] = np.average(Vol_imp[m])
-
-L= list(Vol_imp.keys())
-L.sort()
-G = [Vol_imp[k] for k in L]
-plt.plot(L,G)
-plt.xlabel("K/S")
-plt.ylabel("volatilité implicite extraite du cours ds actions")
+D = Vol_imp
+keys = np.array(list(D.keys()))
+values = np.array(list(D.values()))
+x_coords = keys[:, 0]
+y_coords = keys[:, 1]
+z_coords = values
+rbf = Rbf(x_coords, y_coords, z_coords, function='linear')
+x_grid, y_grid = np.meshgrid(np.linspace(min(x_coords), max(x_coords), 100),
+                             np.linspace(min(y_coords), max(y_coords), 100))
+z_grid = rbf(x_grid, y_grid)
+fig = plt.figure()
+ax = fig.add_subplot(111, projection='3d')
+ax.plot_surface(x_grid, y_grid, z_grid, cmap='viridis')
+ax.scatter(x_coords, y_coords, z_coords, c='r', marker='o')
+ax.set_xlabel('K/S')
+ax.set_ylabel('T')
+ax.set_zlabel('Vol')
 plt.show()
 
