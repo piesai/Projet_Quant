@@ -97,6 +97,8 @@ ax.set_zlabel('Vol')
 plt.show()
 
 
+for m in Vol_imp.keys():
+    Vol_imp[m] = np.average(Vol_imp[m])
 D = Vol_imp
 keys = np.array(list(D.keys()))
 values = np.array(list(D.values()))

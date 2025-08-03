@@ -5,6 +5,7 @@ import numpy as np
 from datetime import datetime,timedelta
 from scipy.stats import norm
 import pytz
+import math
 #extraction des données
 ticker_symbol = 'AAPL'  # Example: Apple Inc.
 ticker = yf.Ticker(ticker_symbol)
@@ -17,10 +18,9 @@ new_york_tz = pytz.timezone('America/New_York')
 may_12th = datetime(year=current_year, month=5, day=12,tzinfo = new_york_tz) #date_premier_dividende de la période intéressante POUR L'ACTION APPLE
 for l in range(20):
             dividends[may_12th + timedelta(days = l*90)] = 0.26
-print(dividends.keys())
-print(dividends.values)
+
 r = 0.0425
-N = 10
+N = 100
 
 def binomial(T,N,K,S,vol):
     u = float(np.exp(vol*np.sqrt(T/N)))
@@ -86,7 +86,6 @@ for ind_Tf in range(len(dates_expi)):
         delta = date_exe - date_exacte
         T = (delta.days)*(5/7)*(1/252) #calcul un peu grossier où on prend 5/7 pour prendre en compte les week ends
         date_string = date_exacte.strftime('%Y-%m-%d' +  ' 00:00:00-04:00')
-        T+=0.03
         
         
         #date des dividendes
@@ -127,14 +126,13 @@ for ind_Tf in range(len(dates_expi)):
 
             
             prix_call = binomial_div(T,N,K,S,vol,D,r)
-            e1 = abs((prix_call-tick["lastPrice"][k])/tick["lastPrice"][k])
-            
-            M1.append(e1)
-            if int(100*(K/S)) in dico1.keys():
-                    dico1[int(100*(K/S))].append(e1)
-
-            else: 
-                dico1[int(100*(K/S))] = [e1]
+            e1 = abs((prix_call-tick["ask"][k])/tick["ask"][k])
+            if not math.isinf(e1) and abs(e1) < 2 and not math.isnan(tick["volume"][k]):
+                M1.append(e1)
+                if int(100*(K/S)) in dico1.keys():
+                        dico1[int(100*(K/S))].append(e1)
+                else: 
+                    dico1[int(100*(K/S))] = [e1]
 
         #volatilité implicite
         if (date_string in cours_fermeture.keys()):
@@ -143,13 +141,14 @@ for ind_Tf in range(len(dates_expi)):
 
             prix_call =  binomial_div(T,N,K,S,vol,D,r)
 
-            e1 = abs((prix_call-tick["lastPrice"][k])/tick["lastPrice"][k])
-            M2.append(e1)
-            if int(100*(K/S)) in dico2.keys():
-                    dico2[int(100*(K/S))].append(e1)
+            e1 = abs((prix_call-tick["ask"][k])/tick["ask"][k])
+            if not math.isinf(e1) and abs(e1) < 2 and not math.isnan(tick["volume"][k]):
+                M2.append(e1)
+                if int(100*(K/S)) in dico2.keys():
+                        dico2[int(100*(K/S))].append(e1)
+                else: 
+                    dico2[int(100*(K/S))] = [e1]
 
-            else: 
-                dico2[int(100*(K/S))] = [e1]
             
 print("moyenne de l'erreur : ",np.average(M1))
 print("ecart type de l'erreur : ",np.std(M1))

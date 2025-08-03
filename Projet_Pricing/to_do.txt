@@ -1,9 +1,6 @@
 #######################################################
 
                 #A FAIRE : 
-#Project_Pricing
-    #SMILE VOLATILITY 3D
-
 
 #advanced_methods : 
     #lire John Hull sur advanced_methods

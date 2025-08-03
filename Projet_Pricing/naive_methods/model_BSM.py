@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from datetime import datetime,timedelta
 from scipy.stats import norm
+import math
 #extraction des données
 ticker_symbol = 'AAPL'  # Example: Apple Inc.
 ticker = yf.Ticker(ticker_symbol)
@@ -26,7 +27,6 @@ for ind_Tf in range(len(dates_expi)):
         delta = date_exe - date_exacte
         T = (delta.days)*(5/7)*(1/252) #calcul un peu grossier où on prend 5/7 pour prendre en compte les week ends
         date_string = date_exacte.strftime('%Y-%m-%d' +  ' 00:00:00-04:00')
-        T += 0.01 # pour que ça marche le vendredi :')
 
         
         #estimateur sans biais de la volatilité
@@ -62,33 +62,38 @@ for ind_Tf in range(len(dates_expi)):
             Nd_1 = norm.cdf(d_1)
             Nd_2 = norm.cdf(d_2)
             prix_call = S*Nd_1 - K*np.exp(-r*T)*Nd_2
-            e1 = abs((prix_call-tick["lastPrice"][k])/tick["lastPrice"][k])
-            
-            M1.append(e1)
-            if int(100*(K/S)) in dico1.keys():
-                    dico1[int(100*(K/S))].append(e1)
-
-            else: 
-                dico1[int(100*(K/S))] = [e1]
+            e1 = abs((prix_call-tick["ask"][k])/tick["ask"][k])
+            if not math.isinf(e1) and not math.isnan(tick["volume"][k]):
+                for l in range(int(tick["volume"][k])):
+                     M1.append(e1)
+                if int(100*(K/S)) in dico1.keys():
+                        dico1[int(100*(K/S))].append(e1)
+                else: 
+                    dico1[int(100*(K/S))] = [e1]
+                
 
         #volatilité implicite
         if (date_string in cours_fermeture.keys()):
             vol = tick["impliedVolatility"][k]
+            
             r = 0.0425 #taux approximatif de la FED. Améliorations possibles
             S = cours_fermeture[date_string]
-            #calcul de BSM : 
+            #calcul de BSM : s
             d_1 = (np.log(S/K) + (r+(vol**2)/2)*T)/(vol*np.sqrt(T))
             d_2 = d_1 - vol*np.sqrt(T)
             Nd_1 = norm.cdf(d_1)
             Nd_2 = norm.cdf(d_2)
             prix_call = S*Nd_1 - K*np.exp(-r*T)*Nd_2
-            e1 = abs((prix_call-tick["lastPrice"][k])/tick["lastPrice"][k])
-            M2.append(e1)
-            if int(100*(K/S)) in dico2.keys():
-                    dico2[int(100*(K/S))].append(e1)
+            e1 = abs((prix_call-tick["ask"][k])/tick["ask"][k])
 
-            else: 
-                dico2[int(100*(K/S))] = [e1]
+            if not math.isinf(e1) and not math.isnan(tick["volume"][k]):
+                for l in range(int(tick["volume"][k])):
+                     M2.append(e1)
+                if int(100*(K/S)) in dico2.keys():
+                        dico2[int(100*(K/S))].append(e1)
+                else: 
+                    dico2[int(100*(K/S))] = [e1]
+
             
 print("moyenne de l'erreur : ",np.average(M1))
 print("ecart type de l'erreur : ",np.std(M1))
