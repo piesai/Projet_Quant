@@ -24,4 +24,12 @@ After reading John C Hull's "Options,Futures and other Derivatives" i wanted to 
         After changing the price of the option from "lastPrice" to "ask", i get much better results on the predictions with "implied volatility". The results are, in average, better for 'model_BSM' however they start getting bad when the options get out the money. Whereas for the binomial tree, the error stays constant with K growing. 
         These models worked very well but just for implied volatility. In real life, to establish long term strategies, it is mandatory to be able to predict options price's without having the implied volatility. Therefore, we have to implement a volatility model that recreates the volatility skew.
 
+#Projet_PM
+I would like to test portfolio management strategies. 
+    #delta_hedge : 
+    very quick project where i try to see how to hedge a portfolio.
+
+    #Projet_Markowitz :
+    I would like to implement Markowitz "optimal portfolio".
+
        
