@@ -85,7 +85,7 @@ for ind_Tf in range(len(dates_expi)):
             Nd_2 = norm.cdf(d_2)
             prix_call = S*Nd_1 - K*np.exp(-r*T)*Nd_2
             e1 = abs((prix_call-tick["ask"][k])/tick["ask"][k])
-
+        
             if not math.isinf(e1) and not math.isnan(tick["volume"][k]):
                 for l in range(int(tick["volume"][k])):
                      M2.append(e1)

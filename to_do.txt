@@ -1,0 +1,11 @@
+#######################################################
+
+                #A FAIRE : 
+#Projet_Hedging : 
+    #hedgr une option avec des données réelles du marché
+    #implémenter le modèle de markowitz
+
+
+
+
+#########################################################""
