@@ -28,6 +28,7 @@ for ind_Tf in range(len(dates_expi)):
     for k in range(len(tick)):
         #calcul date_exacte
         date_exacte = tick["lastTradeDate"][k]
+        print(date_exacte)
         date_exe = pd.Timestamp(dates_expi[ind_Tf],tz = "America/New_York")
         delta = date_exe - date_exacte
         T = (delta.days)*(5/7)*(1/252) #calcul un peu grossier où on prend 5/7 pour prendre en compte les week ends
