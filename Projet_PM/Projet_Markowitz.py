@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from datetime import datetime, timedelta
 input_date = "2021-08-25"
-delay = 10*365
+delay = 5*365
 input_date = datetime.strptime(input_date, "%Y-%m-%d")
 time_period = input_date - timedelta(days=int(delay))
 
@@ -121,35 +121,86 @@ def pf_visu(mu,pf):
     for ticker in tickers:
          cours_action = ticker.history(period = '5y')
          cours_actions.append(cours_action["Close"])
-    print(cours_actions)
-    print(len(cours_actions))
+    
     cours_final = []
-    S_P =  yf.Ticker("^GSPC")
-
+    S_P =  yf.Ticker("^GSPC").history(period='5y')["Close"]
+    SP = []
     temps = []
     a = 0
-    while a < 4*365:
-            jour = date_exacte + timedelta(days = a)
-            jour = jour.strftime('%Y-%m-%d' +  ' 01:00:00-04:00')
-            if (jour in cours_actions[1].keys()):
-                cours_final.append(np.dot(w,[cours_actions[k][jour] for k in range(len(pf))]))
-                temps.append(jour)
-            elif (date_exacte + timedelta(days = a)).strftime('%Y-%m-%d' +  ' 00:00:00-04:00') in cours_actions[1].keys():
-                jour = date_exacte + timedelta(days = a)
-                jour = jour.strftime('%Y-%m-%d' +  ' 00:00:00-04:00')
-                cours_final.append(np.dot(w,[cours_actions[k][jour] for k in range(len(pf))]))
-                temps.append(jour)
-            else:
-                print(jour)
+    while a < 5*365:
+            
+            jour_exacte = date_exacte + timedelta(days = a)
+            jour1 = jour_exacte.strftime('%Y-%m-%d' +  ' 01:00:00-04:00')
+            jour0 = jour_exacte.strftime('%Y-%m-%d' +  ' 00:00:00-04:00')
+            if (jour1 in cours_actions[1].keys()):
+                if (jour1 in S_P.keys()): 
+                    cours_final.append(np.dot(w,[cours_actions[k][jour1] for k in range(len(pf))]))
+                    temps.append(jour1)
+                    SP.append(S_P[jour1]/10)
+                elif jour0 in S_P.keys():
+                    cours_final.append(np.dot(w,[cours_actions[k][jour1] for k in range(len(pf))]))
+                    temps.append(jour1)
+                    SP.append(S_P[jour0]/10)
+            elif jour0 in cours_actions[1].keys():
+                if (jour0 in S_P.keys()): 
+                    cours_final.append(np.dot(w,[cours_actions[k][jour0] for k in range(len(pf))]))
+                    temps.append(jour0)
+                    SP.append(S_P[jour0]/10)
+                elif jour1 in S_P.keys():
+                    cours_final.append(np.dot(w,[cours_actions[k][jour0] for k in range(len(pf))]))
+                    temps.append(jour0)
+                    SP.append(S_P[jour1]/10)
+            
             a+=1
-    return cours_final,temps
+    return cours_final,temps,SP
 
-cours_final1,temps1= pf_visu(9.1,pf)
-plt.plot(temps1,cours_final1,"r")
-cours_final2,temps2= pf_visu(-30,pf)
-plt.plot(temps2,cours_final2,"b")
-cours_final3,temps3= pf_visu(30,pf)
-plt.plot(temps3,cours_final3,"g")
+import numpy as np
+
+
+def Sharpe(SP,portfolio_values, risk_free_rate):
+    """
+    Calculate the Sharpe ratio for a portfolio.
+
+    Parameters:
+    - portfolio_values: List of portfolio values over time
+    - risk_free_rate: Annualized risk-free rate (as a decimal, e.g., 0.02 for 2%)
+
+    Returns:
+    - Sharpe ratio
+    """
+    # Calculate daily returns
+    returns = np.diff(portfolio_values) / portfolio_values[:-1]
+
+    # Annualize the risk-free rate for daily data
+    if len(portfolio_values) > 30:  # Assume daily data if more than 30 points
+        risk_free_rate_daily = (1 + risk_free_rate) ** (1/252) - 1
+    else:  # Assume monthly data
+        risk_free_rate_daily = (1 + risk_free_rate) ** (1/12) - 1
+
+    # Calculate excess returns
+    excess_returns = returns - risk_free_rate_daily
+
+    # Sharpe ratio
+    sharpe_ratio = np.mean(excess_returns) / np.std(excess_returns)
+
+    # Annualize Sharpe ratio
+    sharpe_ratio_annualized = sharpe_ratio * np.sqrt(len(returns))
+
+    return sharpe_ratio_annualized
+
+cours_final1,temps1,SP= pf_visu(9.1,pf)
+print(Sharpe(SP,cours_final1,0.04))
+plt.plot(temps1,cours_final1, linestyle='-', color='g')
+cours_final2,temps2,SP= pf_visu(-50,pf)
+plt.plot(temps2,cours_final2, linestyle='-', color='c')
+cours_final3,temps3,SP= pf_visu(50,pf)
+print(Sharpe(SP,cours_final3,0.04))
+plt.plot(temps3,cours_final3, linestyle='-', color='b')
+print(Sharpe(SP,SP,0.04))
+#A FAIRE PROCHAINE FOIS : 
+     #-implémenter une mega matrice de cov 500x500 ?
+     #-vérifier si les valeurs attendues correspondent à MPT
+plt.plot(temps3,SP, linestyle='-', color='r')
 
 plt.show()
 
