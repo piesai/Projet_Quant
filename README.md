@@ -48,3 +48,4 @@ Exploring portfolio management strategies.
 
 ## Project_Pricing_Heston
 - **Objective**: Calibrate the Heston Model to real world data.
+To test out this project, run the Heston_calibration.py script.
