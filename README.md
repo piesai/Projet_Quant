@@ -1,35 +1,51 @@
 # Projet_Quant
-Testing things about quant finance.
+Testing things about quantitative finance.
 
-#Projet_Pricing
-After reading John C Hull's "Options,Futures and other Derivatives" i wanted to see if theory meets practice using real world finance data. This is why in this first project, i try different pricing methods for options (BSM, Monte Carlo, Binomial Trees).
-        #NAIVE MODELS :
-        #model_BSM : 
-        Here i try to implement BSM's model directly for pricing calls on the 'APPL' stock. I implemented this model first because of its simplicty. The model gives
-        really good values for inTheMoney options as we can see on the graphs. However as soon as the options are out the money, the model fails. 
-        To me, this is because of two problems : 
-            -This model is used for european options only. However, here, i am using it for american options and european options.
-            -This model assumes volatility stays constant.
-        Therefore, i hope i get better results using binomial trees ! 
+---
 
-        #model_Binomial_Tree : 
-        After getting roughly the same results than BSM Model, i try to add dividends. This does not change anything. For the two models, i observe the same
-        phenomenon : 
-            -Very in the money ( K << S) : priced really well and volatility skew very high. Indeed, these movements of high loss can happen on real markets. So these
-            options are priced pretty well since their volatility can be modeled.
-            -Very out of the money (K >> S) : priced really poorly (cf graphs). My models predict these option to be nearly 0 whereas in real life they are a bit more.
-            That is because traders associate a prime to the risk for these options. Indeed if they didn't cost anything, it would be easy money.
+## Projet_Pricing
+After reading John C. Hull's *"Options, Futures, and Other Derivatives"*, I wanted to test if theory aligns with practice using real-world financial data. In this project, I explore different pricing methods for options, including Black-Scholes-Merton (BSM), Monte Carlo simulations, and Binomial Trees.
 
-        #Update : 
-        After changing the price of the option from "lastPrice" to "ask", i get much better results on the predictions with "implied volatility". The results are, in average, better for 'model_BSM' however they start getting bad when the options get out the money. Whereas for the binomial tree, the error stays constant with K growing. 
-        These models worked very well but just for implied volatility. In real life, to establish long term strategies, it is mandatory to be able to predict options price's without having the implied volatility. Therefore, we have to implement a volatility model that recreates the volatility skew.
+---
 
-#Projet_PM
-I would like to test portfolio management strategies. 
-    #delta_hedge : 
-    very quick project where i try to see how to hedge a portfolio.
+### Naive Models
 
-    #Projet_Markowitz :
-    I would like to implement Markowitz "optimal portfolio".
+#### Model_BSM
+- **Objective**: Implement the Black-Scholes-Merton (BSM) model for pricing calls on **AAPL** stock.
+- **Implementation**: Chosen for its simplicity and foundational role in options pricing.
+- **Results**:
+  - **In-the-Money Options**: The model performs well, as evidenced by the graphs.
+  - **Out-of-the-Money Options**: Struggles due to:
+    - BSM being designed for **European options**, while tested on **American options**.
+    - The assumption of **constant volatility**, which is unrealistic in practice.
 
-       
+#### Model_Binomial_Tree
+- **Objective**: Extend the BSM model to account for dividends and American option features.
+- **Results**:
+  - **Very In-the-Money (K << S)**: Accurate pricing with a high volatility skew, reflecting real market behavior.
+  - **Very Out-of-the-Money (K >> S)**: Underpriced compared to real market data. This discrepancy arises because:
+    - Traders price in a risk premium for these options.
+    - Without this premium, the model predicts near-zero prices, which is unrealistic.
+
+#### Update: Using "Ask" Price
+- **Change**: Switched from "lastPrice" to "ask" for option pricing.
+- **Improvement**: Results improved significantly for **implied volatility**.
+- **Observations**:
+  - **BSM**: Better for in-the-money options but still struggles out-of-the-money.
+  - **Binomial Tree**: Consistent error across strikes, making it more reliable for out-of-the-money options.
+- **Conclusion**: These models work well for implied volatility but fail to predict option prices without it. A **volatility model** is needed to capture the volatility skew for long-term strategies.
+
+---
+
+## Projet_PM
+Exploring portfolio management strategies.
+
+#### Delta_Hedge
+- **Objective**: A quick project to understand portfolio hedging using delta.
+
+#### Projet_Markowitz
+- **Objective**: Implement Harry Markowitz's "Optimal Portfolio" theory to construct efficient portfolios.
+
+---
+
+## Project Structure
