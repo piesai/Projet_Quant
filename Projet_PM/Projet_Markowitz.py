@@ -186,10 +186,11 @@ def Sharpe(SP,portfolio_values, risk_free_rate):
     # Annualize Sharpe ratio
     sharpe_ratio_annualized = sharpe_ratio * np.sqrt(len(returns))
 
-    return sharpe_ratio_annualized
+    return sharpe_ratio_annualized,np.std(portfolio_values)
 
 cours_final1,temps1,SP= pf_visu(9.1,pf)
-print(Sharpe(SP,cours_final1,0.04))
+print("Le sharpe, le return et la vol : ",Sharpe(SP,cours_final1,0.04))
+print(" Le return prévu et la vol sont : ",weights(9.1) @ R,weights(9.1).T @ Sigma @ weights(9.1))
 plt.plot(temps1,cours_final1, linestyle='-', color='g')
 cours_final2,temps2,SP= pf_visu(-50,pf)
 plt.plot(temps2,cours_final2, linestyle='-', color='c')
@@ -200,6 +201,10 @@ print(Sharpe(SP,SP,0.04))
 #A FAIRE PROCHAINE FOIS : 
      #-implémenter une mega matrice de cov 500x500 ?
      #-vérifier si les valeurs attendues correspondent à MPT
+        #problème plus difficile que prévu. Décomposer en deux étape :
+            #1. Comme on a la liste des prix du portefeuille et du S&P500, l'objectif va d'abord être de faire que CAPM(stock) = CAPM_liste(stock_list) ou CAPM_liste
+            #ça prend en entrée la liste des valeurs du stock et CAPM(stock) c'est la fonction définit précedemment. Ensuite on scale au portfeuille entier et e
+            #enfin on trouve la vol
 plt.plot(temps3,SP, linestyle='-', color='r')
 
 plt.show()
