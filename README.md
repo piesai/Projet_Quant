@@ -40,12 +40,11 @@ After reading John C. Hull's *"Options, Futures, and Other Derivatives"*, I want
 ## Projet_PM
 Exploring portfolio management strategies.
 
-#### Delta_Hedge
-- **Objective**: A quick project to understand portfolio hedging using delta.
 
 #### Projet_Markowitz
 - **Objective**: Implement Harry Markowitz's "Optimal Portfolio" theory to construct efficient portfolios.
 
 ---
 
-## Project Structure
+## Project_Pricing_Heston
+- **Objective**: Calibrate the Heston Model to real world data.
